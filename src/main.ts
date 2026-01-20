@@ -1,12 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { environment } from './config/environment';
 import helmet from 'helmet';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Configurar Pino Logger
+  app.useLogger(app.get(Logger));
+  app.flushLogs();
 
   app.use(helmet());
 
@@ -45,10 +50,12 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const port = environment.port;
+  const logger = app.get(Logger);
+  
   await app.listen(port);
 
-  console.log(`[CORE] Application running on: http://localhost:${port}`);
-  console.log(`[CORE] Swagger documentation: http://localhost:${port}/api`);
+  logger.log(`Application running on: http://localhost:${port}`);
+  logger.log(`Swagger documentation: http://localhost:${port}/api`);
 }
 
 bootstrap();

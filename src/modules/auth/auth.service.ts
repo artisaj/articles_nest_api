@@ -1,19 +1,25 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectPinoLogger(AuthService.name)
+    private readonly logger: PinoLogger,
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
   async login(loginDto: LoginDto) {
+    this.logger.info({ email: loginDto.email }, 'Login attempt');
+
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
+      this.logger.warn({ email: loginDto.email }, 'Login failed: user not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -23,6 +29,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
+      this.logger.warn({ email: loginDto.email, userId: user.id }, 'Login failed: invalid password');
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -33,6 +40,8 @@ export class AuthService {
       email: user.email,
       permissions,
     };
+
+    this.logger.info({ userId: user.id, email: user.email, permissions }, 'Login successful');
 
     return {
       access_token: this.jwtService.sign(payload),
