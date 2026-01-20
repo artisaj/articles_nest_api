@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
 describe('Authentication (e2e)', () => {
@@ -35,7 +35,7 @@ describe('Authentication (e2e)', () => {
           password: 'Admin@123',
         })
         .expect(200)
-        .expect((res) => {
+        .expect((res: any) => {
           expect(res.body).toHaveProperty('access_token');
           expect(res.body).toHaveProperty('user');
           expect(res.body.user).toHaveProperty('email', 'admin@example.com');
