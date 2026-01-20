@@ -25,7 +25,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { PermissionsService } from '../permissions/permissions.service';
 
 @ApiTags('Usuários')
-@Controller('users')
+@Controller({ path: 'users', version: '1' })
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,

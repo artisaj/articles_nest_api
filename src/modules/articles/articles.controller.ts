@@ -27,7 +27,7 @@ import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('Artigos')
 @ApiBearerAuth('JWT-auth')
-@Controller('articles')
+@Controller({ path: 'articles', version: '1' })
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
