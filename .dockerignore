@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.git
+.gitignore
+README.md
+.prettierrc
+eslint.config.mjs
+coverage
+*.log
