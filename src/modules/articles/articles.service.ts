@@ -3,6 +3,7 @@ import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { FilterArticleDto } from './dto/filter-article.dto';
 
 @Injectable()
 export class ArticlesService {
@@ -44,9 +45,45 @@ export class ArticlesService {
     return article;
   }
 
-  async findAll() {
-    this.logger.debug('Fetching all articles');
-    return this.prisma.article.findMany({
+  async findAll(filterDto: FilterArticleDto) {
+    this.logger.info({ filters: filterDto }, 'Listing articles with filters');
+
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      title,
+      authorId,
+    } = filterDto;
+
+    const skip = (page - 1) * limit;
+
+    // Construir filtros dinâmicos
+    const where: any = {};
+
+    if (title) {
+      where.title = {
+        contains: title,
+        mode: 'insensitive',
+      };
+    }
+
+    if (authorId) {
+      where.creatorId = authorId;
+    }
+
+    // Buscar total de registros
+    const total = await this.prisma.article.count({ where });
+
+    // Buscar dados paginados
+    const articles = await this.prisma.article.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
       include: {
         creator: {
           select: {
@@ -56,10 +93,21 @@ export class ArticlesService {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: articles,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {

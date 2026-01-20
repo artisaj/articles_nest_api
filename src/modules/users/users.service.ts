@@ -7,6 +7,7 @@ import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -57,9 +58,48 @@ export class UsersService {
     return user;
   }
 
-  async findAll() {
-    this.logger.debug('Fetching all users');
-    return this.prisma.user.findMany({
+  async findAll(filterDto: FilterUserDto) {
+    this.logger.info({ filters: filterDto }, 'Listing users with filters');
+
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      name,
+      email,
+    } = filterDto;
+
+    const skip = (page - 1) * limit;
+
+    // Construir filtros dinâmicos
+    const where: any = {};
+
+    if (name) {
+      where.name = {
+        contains: name,
+        mode: 'insensitive',
+      };
+    }
+
+    if (email) {
+      where.email = {
+        contains: email,
+        mode: 'insensitive',
+      };
+    }
+
+    // Buscar total de registros
+    const total = await this.prisma.user.count({ where });
+
+    // Buscar dados paginados
+    const users = await this.prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
       select: {
         id: true,
         name: true,
@@ -73,6 +113,20 @@ export class UsersService {
         },
       },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: users,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {

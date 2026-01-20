@@ -11,6 +11,7 @@ import {
   Request,
   Options,
   Header,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { FilterArticleDto } from './dto/filter-article.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { Public } from '../../common/decorators/public.decorator';
@@ -131,33 +133,53 @@ export class ArticlesController {
   @Roles(Role.ADMIN, Role.EDITOR, Role.READER)
   @Get()
   @ApiOperation({
-    summary: 'Listar todos os artigos',
+    summary: 'Listar todos os artigos com paginação e filtros',
     description:
-      'Retorna uma lista com todos os artigos cadastrados. Requer autenticação e uma das permissões: ADMIN, EDITOR ou READER.',
+      'Retorna uma lista paginada de artigos com suporte a filtros e ordenação. Suporta filtros por título e ID do autor.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de artigos',
+    description: 'Lista paginada de artigos',
     schema: {
-      example: [
-        {
-          id: '789e4567-e89b-12d3-a456-426614174002',
-          title: 'Como implementar autenticação JWT em NestJS',
-          content:
-            '# Introdução ao NestJS\n\nNestJS é um framework progressivo...',
-          authorId: '123e4567-e89b-12d3-a456-426614174000',
-          createdAt: '2024-01-20T11:00:00.000Z',
-          updatedAt: '2024-01-20T11:00:00.000Z',
+      example: {
+        data: [
+          {
+            id: '789e4567-e89b-12d3-a456-426614174002',
+            title: 'Como implementar autenticação JWT em NestJS',
+            content:
+              '# Introdução ao NestJS\n\nNestJS é um framework progressivo...',
+            creatorId: '123e4567-e89b-12d3-a456-426614174000',
+            creator: {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              name: 'Maria Silva',
+              email: 'maria.silva@example.com',
+            },
+            createdAt: '2024-01-20T11:00:00.000Z',
+            updatedAt: '2024-01-20T11:00:00.000Z',
+          },
+          {
+            id: '889e4567-e89b-12d3-a456-426614174003',
+            title: 'Introdução ao Prisma ORM',
+            content: 'Prisma é um ORM moderno para Node.js e TypeScript...',
+            creatorId: '223e4567-e89b-12d3-a456-426614174001',
+            creator: {
+              id: '223e4567-e89b-12d3-a456-426614174001',
+              name: 'João Santos',
+              email: 'joao.santos@example.com',
+            },
+            createdAt: '2024-01-19T16:30:00.000Z',
+            updatedAt: '2024-01-19T16:30:00.000Z',
+          },
+        ],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: 25,
+          totalPages: 3,
+          hasNextPage: true,
+          hasPreviousPage: false,
         },
-        {
-          id: '889e4567-e89b-12d3-a456-426614174003',
-          title: 'Introdução ao Prisma ORM',
-          content: 'Prisma é um ORM moderno para Node.js e TypeScript...',
-          authorId: '223e4567-e89b-12d3-a456-426614174001',
-          createdAt: '2024-01-19T16:30:00.000Z',
-          updatedAt: '2024-01-19T16:30:00.000Z',
-        },
-      ],
+      },
     },
   })
   @ApiResponse({
@@ -181,8 +203,8 @@ export class ArticlesController {
       },
     },
   })
-  findAll() {
-    return this.articlesService.findAll();
+  findAll(@Query() filterDto: FilterArticleDto) {
+    return this.articlesService.findAll(filterDto);
   }
 
   @Roles(Role.ADMIN, Role.EDITOR, Role.READER)

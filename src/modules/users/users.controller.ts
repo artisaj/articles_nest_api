@@ -11,6 +11,7 @@ import {
   Options,
   Header,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { PermissionsService } from '../permissions/permissions.service';
 
@@ -124,30 +126,40 @@ export class UsersController {
   @Get()
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
-    summary: 'Listar todos os usuários',
+    summary: 'Listar todos os usuários com paginação e filtros',
     description:
-      'Retorna uma lista com todos os usuários cadastrados no sistema. Requer autenticação.',
+      'Retorna uma lista paginada de usuários com suporte a filtros e ordenação. Suporta filtros por nome e email (case-insensitive).',
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuários',
+    description: 'Lista paginada de usuários',
     schema: {
-      example: [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'Maria Silva',
-          email: 'maria.silva@example.com',
-          createdAt: '2024-01-20T10:30:00.000Z',
-          updatedAt: '2024-01-20T10:30:00.000Z',
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            name: 'Maria Silva',
+            email: 'maria.silva@example.com',
+            createdAt: '2024-01-20T10:30:00.000Z',
+            updatedAt: '2024-01-20T10:30:00.000Z',
+          },
+          {
+            id: '223e4567-e89b-12d3-a456-426614174001',
+            name: 'João Santos',
+            email: 'joao.santos@example.com',
+            createdAt: '2024-01-19T15:20:00.000Z',
+            updatedAt: '2024-01-19T15:20:00.000Z',
+          },
+        ],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: 50,
+          totalPages: 5,
+          hasNextPage: true,
+          hasPreviousPage: false,
         },
-        {
-          id: '223e4567-e89b-12d3-a456-426614174001',
-          name: 'João Santos',
-          email: 'joao.santos@example.com',
-          createdAt: '2024-01-19T15:20:00.000Z',
-          updatedAt: '2024-01-19T15:20:00.000Z',
-        },
-      ],
+      },
     },
   })
   @ApiResponse({
@@ -160,8 +172,8 @@ export class UsersController {
       },
     },
   })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() filterDto: FilterUserDto) {
+    return this.usersService.findAll(filterDto);
   }
 
   @Get(':id')
