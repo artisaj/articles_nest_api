@@ -19,7 +19,10 @@ export class AuthService {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
-      this.logger.warn({ email: loginDto.email }, 'Login failed: user not found');
+      this.logger.warn(
+        { email: loginDto.email },
+        'Login failed: user not found',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -29,7 +32,10 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      this.logger.warn({ email: loginDto.email, userId: user.id }, 'Login failed: invalid password');
+      this.logger.warn(
+        { email: loginDto.email, userId: user.id },
+        'Login failed: invalid password',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -41,7 +47,10 @@ export class AuthService {
       permissions,
     };
 
-    this.logger.info({ userId: user.id, email: user.email, permissions }, 'Login successful');
+    this.logger.info(
+      { userId: user.id, email: user.email, permissions },
+      'Login successful',
+    );
 
     return {
       access_token: this.jwtService.sign(payload),

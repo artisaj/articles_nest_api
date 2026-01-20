@@ -5,11 +5,11 @@ import { Request, Response, NextFunction } from 'express';
 export class RequestIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const requestId = req.id || (req as any).headers['x-request-id'];
-    
+
     if (requestId) {
       res.setHeader('X-Request-Id', requestId);
     }
-    
+
     next();
   }
 }

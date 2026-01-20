@@ -13,6 +13,9 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.flushLogs();
 
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
+
   app.use(helmet());
 
   app.useGlobalPipes(
@@ -51,11 +54,12 @@ async function bootstrap() {
 
   const port = environment.port;
   const logger = app.get(Logger);
-  
+
   await app.listen(port);
 
   logger.log(`Application running on: http://localhost:${port}`);
   logger.log(`Swagger documentation: http://localhost:${port}/api`);
+  logger.log(`Health check: http://localhost:${port}/health`);
 }
 
 bootstrap();

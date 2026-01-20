@@ -25,7 +25,10 @@ export class UsersService {
     });
 
     if (existingUser) {
-      this.logger.warn({ email: createUserDto.email }, 'User creation failed: email already exists');
+      this.logger.warn(
+        { email: createUserDto.email },
+        'User creation failed: email already exists',
+      );
       throw new ConflictException('Email already exists');
     }
 
@@ -46,7 +49,10 @@ export class UsersService {
       },
     });
 
-    this.logger.info({ userId: user.id, email: user.email }, 'User created successfully');
+    this.logger.info(
+      { userId: user.id, email: user.email },
+      'User created successfully',
+    );
 
     return user;
   }
@@ -119,7 +125,10 @@ export class UsersService {
       });
 
       if (existingUser && existingUser.id !== id) {
-        this.logger.warn({ userId: id, email: updateUserDto.email }, 'User update failed: email already exists');
+        this.logger.warn(
+          { userId: id, email: updateUserDto.email },
+          'User update failed: email already exists',
+        );
         throw new ConflictException('Email already exists');
       }
     }

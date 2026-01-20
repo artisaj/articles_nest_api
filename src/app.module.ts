@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { ArticlesModule } from './modules/articles/articles.module';
+import { HealthModule } from './modules/health/health.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
@@ -24,11 +25,12 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const isProduction = config.get('NODE_ENV') === 'production';
-        
+
         return {
           pinoHttp: {
             level: isProduction ? 'info' : 'debug',
-            genReqId: (req) => req.headers['x-request-id'] || require('crypto').randomUUID(),
+            genReqId: (req) =>
+              req.headers['x-request-id'] || require('crypto').randomUUID(),
             transport: isProduction
               ? undefined
               : {
@@ -89,6 +91,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
     AuthModule,
     PermissionsModule,
     ArticlesModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [

@@ -13,7 +13,10 @@ export class ArticlesService {
   ) {}
 
   async create(createArticleDto: CreateArticleDto, creatorId: string) {
-    this.logger.info({ creatorId, title: createArticleDto.title }, 'Creating new article');
+    this.logger.info(
+      { creatorId, title: createArticleDto.title },
+      'Creating new article',
+    );
 
     const article = await this.prisma.article.create({
       data: {
@@ -34,7 +37,10 @@ export class ArticlesService {
       },
     });
 
-    this.logger.info({ articleId: article.id, creatorId, title: article.title }, 'Article created successfully');
+    this.logger.info(
+      { articleId: article.id, creatorId, title: article.title },
+      'Article created successfully',
+    );
     return article;
   }
 
