@@ -19,7 +19,7 @@ services:
     networks:
       - artigos-network
 
-  app:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
