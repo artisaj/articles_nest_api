@@ -12,7 +12,12 @@ import {
   Options,
   Header,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -29,7 +34,10 @@ export class ArticlesController {
   @Roles(Role.ADMIN, Role.EDITOR)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Criar novo artigo', description: 'Apenas ADMIN e EDITOR podem criar artigos' })
+  @ApiOperation({
+    summary: 'Criar novo artigo',
+    description: 'Apenas ADMIN e EDITOR podem criar artigos',
+  })
   @ApiResponse({ status: 201, description: 'Artigo criado com sucesso' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 403, description: 'Sem permissão' })
@@ -91,7 +99,10 @@ export class ArticlesController {
 
   @Roles(Role.ADMIN, Role.EDITOR)
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar artigo', description: 'Apenas ADMIN e EDITOR' })
+  @ApiOperation({
+    summary: 'Atualizar artigo',
+    description: 'Apenas ADMIN e EDITOR',
+  })
   @ApiResponse({ status: 200, description: 'Artigo atualizado' })
   @ApiResponse({ status: 403, description: 'Sem permissão' })
   @ApiResponse({ status: 404, description: 'Artigo não encontrado' })
@@ -102,7 +113,10 @@ export class ArticlesController {
   @Roles(Role.ADMIN, Role.EDITOR)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Deletar artigo', description: 'Apenas ADMIN e EDITOR' })
+  @ApiOperation({
+    summary: 'Deletar artigo',
+    description: 'Apenas ADMIN e EDITOR',
+  })
   @ApiResponse({ status: 204, description: 'Artigo deletado' })
   @ApiResponse({ status: 403, description: 'Sem permissão' })
   @ApiResponse({ status: 404, description: 'Artigo não encontrado' })

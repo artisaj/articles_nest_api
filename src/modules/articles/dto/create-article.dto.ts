@@ -14,7 +14,8 @@ export class CreateArticleDto {
 
   @ApiProperty({
     description: 'Conteúdo do artigo',
-    example: 'NestJS é um framework progressivo para construção de aplicações server-side eficientes e escaláveis...',
+    example:
+      'NestJS é um framework progressivo para construção de aplicações server-side eficientes e escaláveis...',
   })
   @IsNotEmpty()
   @IsString()

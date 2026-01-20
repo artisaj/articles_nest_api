@@ -24,7 +24,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('API de Gerenciamento de Artigos')
-    .setDescription('API REST para gerenciamento de artigos com autenticação JWT e controle de permissões (RBAC)')
+    .setDescription(
+      'API REST para gerenciamento de artigos com autenticação JWT e controle de permissões (RBAC)',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {

@@ -11,7 +11,12 @@ import {
   Options,
   Header,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -116,7 +121,10 @@ export class UsersController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Atribuir permissão a usuário' })
   @ApiResponse({ status: 200, description: 'Permissão atribuída' })
-  @ApiResponse({ status: 404, description: 'Usuário ou permissão não encontrado' })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário ou permissão não encontrado',
+  })
   @HttpCode(HttpStatus.OK)
   async assignPermission(
     @Param('userId') userId: string,
