@@ -36,11 +36,59 @@ export class ArticlesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Criar novo artigo',
-    description: 'Apenas ADMIN e EDITOR podem criar artigos',
+    description:
+      'Cria um novo artigo no sistema. Apenas usuários com permissão ADMIN ou EDITOR podem criar artigos. O autor será automaticamente definido como o usuário autenticado.',
   })
-  @ApiResponse({ status: 201, description: 'Artigo criado com sucesso' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 403, description: 'Sem permissão' })
+  @ApiResponse({
+    status: 201,
+    description: 'Artigo criado com sucesso',
+    schema: {
+      example: {
+        id: '789e4567-e89b-12d3-a456-426614174002',
+        title: 'Como implementar autenticação JWT em NestJS',
+        content:
+          '# Introdução ao NestJS\n\nNestJS é um framework progressivo para construção de aplicações server-side...',
+        authorId: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2024-01-20T11:00:00.000Z',
+        updatedAt: '2024-01-20T11:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado - Token inválido ou ausente',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão - Usuário não possui role ADMIN ou EDITOR',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: [
+          'title should not be empty',
+          'title must be shorter than or equal to 255 characters',
+        ],
+        error: 'Bad Request',
+      },
+    },
+  })
   create(@Body() createArticleDto: CreateArticleDto, @Request() req: any) {
     return this.articlesService.create(createArticleDto, req.user.userId);
   }
@@ -82,17 +130,103 @@ export class ArticlesController {
 
   @Roles(Role.ADMIN, Role.EDITOR, Role.READER)
   @Get()
-  @ApiOperation({ summary: 'Listar todos os artigos' })
-  @ApiResponse({ status: 200, description: 'Lista de artigos' })
+  @ApiOperation({
+    summary: 'Listar todos os artigos',
+    description:
+      'Retorna uma lista com todos os artigos cadastrados. Requer autenticação e uma das permissões: ADMIN, EDITOR ou READER.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de artigos',
+    schema: {
+      example: [
+        {
+          id: '789e4567-e89b-12d3-a456-426614174002',
+          title: 'Como implementar autenticação JWT em NestJS',
+          content:
+            '# Introdução ao NestJS\n\nNestJS é um framework progressivo...',
+          authorId: '123e4567-e89b-12d3-a456-426614174000',
+          createdAt: '2024-01-20T11:00:00.000Z',
+          updatedAt: '2024-01-20T11:00:00.000Z',
+        },
+        {
+          id: '889e4567-e89b-12d3-a456-426614174003',
+          title: 'Introdução ao Prisma ORM',
+          content: 'Prisma é um ORM moderno para Node.js e TypeScript...',
+          authorId: '223e4567-e89b-12d3-a456-426614174001',
+          createdAt: '2024-01-19T16:30:00.000Z',
+          updatedAt: '2024-01-19T16:30:00.000Z',
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
   findAll() {
     return this.articlesService.findAll();
   }
 
   @Roles(Role.ADMIN, Role.EDITOR, Role.READER)
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar artigo por ID' })
-  @ApiResponse({ status: 200, description: 'Artigo encontrado' })
-  @ApiResponse({ status: 404, description: 'Artigo não encontrado' })
+  @ApiOperation({
+    summary: 'Buscar artigo por ID',
+    description: 'Retorna os dados de um artigo específico pelo seu ID.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Artigo encontrado',
+    schema: {
+      example: {
+        id: '789e4567-e89b-12d3-a456-426614174002',
+        title: 'Como implementar autenticação JWT em NestJS',
+        content:
+          '# Introdução ao NestJS\n\nNestJS é um framework progressivo para construção de aplicações server-side eficientes e escaláveis...',
+        authorId: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2024-01-20T11:00:00.000Z',
+        updatedAt: '2024-01-20T11:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Artigo não encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Artigo não encontrado',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  })
   findOne(@Param('id') id: string) {
     return this.articlesService.findOne(id);
   }

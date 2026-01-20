@@ -35,9 +35,49 @@ export class UsersController {
   @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Criar novo usuário' })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiOperation({
+    summary: 'Criar novo usuário',
+    description:
+      'Cria um novo usuário no sistema. Este endpoint é público e não requer autenticação. O e-mail deve ser único.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuário criado com sucesso',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Maria Silva',
+        email: 'maria.silva@example.com',
+        createdAt: '2024-01-20T10:30:00.000Z',
+        updatedAt: '2024-01-20T10:30:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos ou e-mail já existe',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: [
+          'email must be an email',
+          'password must be longer than 6 characters',
+        ],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'E-mail já cadastrado',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'E-mail já está em uso',
+        error: 'Conflict',
+      },
+    },
+  })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -83,18 +123,88 @@ export class UsersController {
 
   @Get()
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Listar todos os usuários' })
-  @ApiResponse({ status: 200, description: 'Lista de usuários' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiOperation({
+    summary: 'Listar todos os usuários',
+    description:
+      'Retorna uma lista com todos os usuários cadastrados no sistema. Requer autenticação.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuários',
+    schema: {
+      example: [
+        {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          name: 'Maria Silva',
+          email: 'maria.silva@example.com',
+          createdAt: '2024-01-20T10:30:00.000Z',
+          updatedAt: '2024-01-20T10:30:00.000Z',
+        },
+        {
+          id: '223e4567-e89b-12d3-a456-426614174001',
+          name: 'João Santos',
+          email: 'joao.santos@example.com',
+          createdAt: '2024-01-19T15:20:00.000Z',
+          updatedAt: '2024-01-19T15:20:00.000Z',
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado - Token inválido ou ausente',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Buscar usuário por ID' })
-  @ApiResponse({ status: 200, description: 'Usuário encontrado' })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  @ApiOperation({
+    summary: 'Buscar usuário por ID',
+    description:
+      'Retorna os dados de um usuário específico pelo seu ID. Requer autenticação.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuário encontrado',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Maria Silva',
+        email: 'maria.silva@example.com',
+        createdAt: '2024-01-20T10:30:00.000Z',
+        updatedAt: '2024-01-20T10:30:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Usuário não encontrado',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }

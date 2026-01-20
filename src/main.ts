@@ -5,6 +5,8 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { environment } from './config/environment';
 import helmet from 'helmet';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -31,26 +33,93 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('API de Gerenciamento de Artigos')
+    .setTitle('Articles API')
     .setDescription(
-      'API REST para gerenciamento de artigos com autenticação JWT e controle de permissões (RBAC)',
+      `**API REST para gerenciamento de artigos com autenticação JWT e controle de permissões (RBAC)**
+
+## Guia Rápido
+
+### Autenticação
+1. **Criar usuário**: POST \`/users\` (endpoint público)
+2. **Fazer login**: POST \`/auth/login\` - retorna token JWT
+3. **Autorizar**: Clique em "Authorize" e cole o token (sem "Bearer")
+4. **Usar API**: Todas as requisições autenticadas funcionarão
+
+### Fluxo Básico
+\`\`\`
+POST /users          → Criar conta
+POST /auth/login     → Obter token
+GET  /articles       → Listar artigos (requer auth)
+POST /articles       → Criar artigo (requer auth)
+\`\`\`
+
+### Headers Customizados
+- **X-Request-Id**: ID único de rastreamento (gerado automaticamente ou fornecido)
+
+### Recursos
+- Autenticação JWT com refresh token
+- Rate limiting (10 req/min)
+- Logs estruturados com Pino
+- Health checks: \`/health\`, \`/health/live\`, \`/health/ready\`
+- Repositório: [GitHub](https://github.com/artisaj/articles_nest_api)
+
+---
+`,
     )
-    .setVersion('1.0')
+    .setVersion('1.0.0')
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
         name: 'JWT',
-        description: 'Informe o token JWT',
+        description: 'Informe o token JWT obtido no endpoint /auth/login',
         in: 'header',
       },
       'JWT-auth',
     )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'X-Request-Id',
+        in: 'header',
+        description:
+          'ID único para rastreamento de requisições (opcional - gerado automaticamente se não fornecido)',
+      },
+      'Request-ID',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+
+  // Carregar CSS customizado
+  const customCss = fs.readFileSync(
+    path.join(__dirname, 'config', 'swagger.css'),
+    'utf8',
+  );
+
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none',
+      filter: true,
+      showRequestDuration: true,
+      syntaxHighlight: {
+        activate: true,
+        theme: 'monokai',
+      },
+      tryItOutEnabled: true,
+      displayOperationId: false,
+      displayRequestDuration: true,
+      defaultModelsExpandDepth: 3,
+      defaultModelExpandDepth: 3,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+    customSiteTitle: 'Articles API - Documentation',
+    customCss,
+    customCssUrl: '',
+  });
 
   const port = environment.port;
   const logger = app.get(Logger);
