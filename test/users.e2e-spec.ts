@@ -11,6 +11,7 @@ describe('Users CRUD (e2e)', () => {
   let app: INestApplication;
   let adminToken: string;
   let createdUserId: string;
+  const testEmail = `test.${Date.now()}@example.com`;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -33,7 +34,7 @@ describe('Users CRUD (e2e)', () => {
 
     // Login to get admin token
     const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'admin@example.com',
         password: 'Admin@123',
@@ -51,13 +52,13 @@ describe('Users CRUD (e2e)', () => {
         .post('/v1/users')
         .send({
           name: 'Test User E2E',
-          email: 'test.e2e@example.com',
+          email: testEmail,
           password: 'Test@123',
         })
         .expect(201)
         .expect((res) => {
           expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('email', 'test.e2e@example.com');
+          expect(res.body).toHaveProperty('email', testEmail);
           expect(res.body).toHaveProperty('name', 'Test User E2E');
           expect(res.body).not.toHaveProperty('password');
           createdUserId = res.body.id;
@@ -165,7 +166,7 @@ describe('Users CRUD (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('id', createdUserId);
-          expect(res.body).toHaveProperty('email', 'test.e2e@example.com');
+          expect(res.body).toHaveProperty('email', testEmail);
         });
     });
 

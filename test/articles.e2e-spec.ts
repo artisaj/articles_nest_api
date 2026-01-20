@@ -35,7 +35,7 @@ describe('Articles CRUD (e2e)', () => {
 
     // Login as admin
     const adminResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'admin@example.com',
         password: 'Admin@123',
@@ -43,20 +43,20 @@ describe('Articles CRUD (e2e)', () => {
     adminToken = adminResponse.body.access_token;
 
     // Create and login as editor
-    await request(app.getHttpServer()).post('/v1/users').send({
-      name: 'Editor E2E',
-      email: 'editor.e2e@example.com',
-      password: 'Editor@123',
-    });
+    const editorUserResponse = await request(app.getHttpServer())
+      .post('/v1/users')
+      .send({
+        name: 'Editor E2E',
+        email: 'editor.e2e@example.com',
+        password: 'Editor@123',
+      });
+    const editorUserId = editorUserResponse.body.id;
+
     await request(app.getHttpServer())
-      .post(
-        '/v1/users/' +
-          (await getUserId('editor.e2e@example.com')) +
-          '/permissions/EDITOR',
-      )
+      .post(`/v1/users/${editorUserId}/permissions/EDITOR`)
       .set('Authorization', `Bearer ${adminToken}`);
     const editorResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'editor.e2e@example.com',
         password: 'Editor@123',
@@ -64,34 +64,26 @@ describe('Articles CRUD (e2e)', () => {
     editorToken = editorResponse.body.access_token;
 
     // Create and login as reader
-    await request(app.getHttpServer()).post('/v1/users').send({
-      name: 'Reader E2E',
-      email: 'reader.e2e@example.com',
-      password: 'Reader@123',
-    });
+    const readerUserResponse = await request(app.getHttpServer())
+      .post('/v1/users')
+      .send({
+        name: 'Reader E2E',
+        email: 'reader.e2e@example.com',
+        password: 'Reader@123',
+      });
+    const readerUserId = readerUserResponse.body.id;
+
     await request(app.getHttpServer())
-      .post(
-        '/v1/users/' +
-          (await getUserId('reader.e2e@example.com')) +
-          '/permissions/READER',
-      )
+      .post(`/v1/users/${readerUserId}/permissions/READER`)
       .set('Authorization', `Bearer ${adminToken}`);
     const readerResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'reader.e2e@example.com',
         password: 'Reader@123',
       });
     readerToken = readerResponse.body.access_token;
   });
-
-  async function getUserId(email: string): Promise<string> {
-    const response = await request(app.getHttpServer())
-      .get('/v1/users')
-      .set('Authorization', `Bearer ${adminToken}`);
-    const user = response.body.data.find((u: any) => u.email === email);
-    return user.id;
-  }
 
   afterAll(async () => {
     await app.close();

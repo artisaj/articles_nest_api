@@ -34,7 +34,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     // Login as admin
     const adminResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'admin@example.com',
         password: 'Admin@123',
@@ -58,7 +58,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     // Login as editor
     const editorLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'editor.perm@example.com',
         password: 'Editor@123',
@@ -82,7 +82,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     // Login as reader
     const readerLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/v1/auth/login')
       .send({
         email: 'reader.perm@example.com',
         password: 'Reader@123',
@@ -199,7 +199,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
       // Try to update as reader
       return request(app.getHttpServer())
-        .patch(`/articles/${articleId}`)
+        .patch(`/v1/articles/${articleId}`)
         .set('Authorization', `Bearer ${readerToken}`)
         .send({
           title: 'Should fail',
@@ -221,7 +221,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
       // Try to delete as reader
       return request(app.getHttpServer())
-        .delete(`/articles/${articleId}`)
+        .delete(`/v1/articles/${articleId}`)
         .set('Authorization', `Bearer ${readerToken}`)
         .expect(403);
     });
@@ -230,7 +230,7 @@ describe('Permissions & RBAC (e2e)', () => {
   describe('JWT token validation', () => {
     it('should include permissions in JWT payload', async () => {
       const response = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/v1/auth/login')
         .send({
           email: 'admin@example.com',
           password: 'Admin@123',

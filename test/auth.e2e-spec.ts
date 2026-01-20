@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
@@ -12,6 +16,10 @@ describe('Authentication (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -29,7 +37,7 @@ describe('Authentication (e2e)', () => {
   describe('/auth/login (POST)', () => {
     it('should authenticate user with valid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/v1/auth/login')
         .send({
           email: 'admin@example.com',
           password: 'Admin@123',
@@ -45,7 +53,7 @@ describe('Authentication (e2e)', () => {
 
     it('should reject invalid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/v1/auth/login')
         .send({
           email: 'admin@example.com',
           password: 'wrongpassword',
@@ -55,7 +63,7 @@ describe('Authentication (e2e)', () => {
 
     it('should reject invalid email format', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/v1/auth/login')
         .send({
           email: 'invalid-email',
           password: 'Admin@123',
@@ -65,7 +73,7 @@ describe('Authentication (e2e)', () => {
 
     it('should reject missing credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/v1/auth/login')
         .send({})
         .expect(400);
     });
