@@ -17,7 +17,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Realizar login' })
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
-  @ApiResponse({ status: 429, description: 'Muitas tentativas. Tente novamente mais tarde.' })
+  @ApiResponse({
+    status: 429,
+    description: 'Muitas tentativas. Tente novamente mais tarde.',
+  })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }

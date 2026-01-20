@@ -24,5 +24,8 @@ fi
 echo "[DOCKER] Running Prisma migrations..."
 npx prisma migrate deploy
 
+echo "[DOCKER] Running database seeds..."
+npx prisma db seed
+
 echo "[DOCKER] Starting application..."
 exec "$@"
