@@ -10,6 +10,7 @@ import {
   HttpStatus,
   Options,
   Header,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -125,6 +126,10 @@ export class UsersController {
     status: 404,
     description: 'Usuário ou permissão não encontrado',
   })
+  @ApiResponse({
+    status: 409,
+    description: 'Usuário já possui esta permissão',
+  })
   @HttpCode(HttpStatus.OK)
   async assignPermission(
     @Param('userId') userId: string,
@@ -132,7 +137,7 @@ export class UsersController {
   ) {
     const permission = await this.permissionsService.findByName(permissionName);
     if (!permission) {
-      throw new Error('Permission not found');
+      throw new NotFoundException('Permission not found');
     }
     return this.permissionsService.assignPermissionToUser(
       userId,
