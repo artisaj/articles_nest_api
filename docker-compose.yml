@@ -29,7 +29,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/artigos?schema=public"
-      JWT_SECRET: "super-secret-jwt-key"
+      JWT_SECRET: dev-secret-key-change-in-production-min-32-chars-long
       JWT_EXPIRATION: "24h"
       PORT: 3000
       NODE_ENV: "production"
