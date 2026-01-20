@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  console.log('[PRISMA] Starting database seeding...');
 
   const adminPermission = await prisma.permission.upsert({
     where: { name: 'ADMIN' },
@@ -34,7 +34,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Permissions created');
+  console.log('[PRISMA] Permissions created');
 
   const hashedPassword = await bcrypt.hash('Admin@123', 10);
 
@@ -62,16 +62,16 @@ async function main() {
     },
   });
 
-  console.log('✅ Root admin user created');
+  console.log('[PRISMA] Root admin user created');
   console.log('   Email: admin@example.com');
   console.log('   Password: Admin@123');
 
-  console.log('🌱 Database seeding completed!');
+  console.log('[PRISMA] Database seeding completed!');
 }
 
 main()
   .catch((error) => {
-    console.error('❌ Error seeding database:', error);
+    console.error('[PRISMA] Error seeding database:', error);
     process.exit(1);
   })
   .finally(async () => {

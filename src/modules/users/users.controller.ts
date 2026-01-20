@@ -12,11 +12,17 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Public } from '../../common/decorators/public.decorator';
+import { PermissionsService } from '../permissions/permissions.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly permissionsService: PermissionsService,
+  ) {}
 
+  @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createUserDto: CreateUserDto) {
@@ -42,5 +48,18 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Post(':userId/permissions/:permissionName')
+  @HttpCode(HttpStatus.OK)
+  async assignPermission(
+    @Param('userId') userId: string,
+    @Param('permissionName') permissionName: string,
+  ) {
+    const permission = await this.permissionsService.findByName(permissionName);
+    if (!permission) {
+      throw new Error('Permission not found');
+    }
+    return this.permissionsService.assignPermissionToUser(userId, permission.id);
   }
 }
