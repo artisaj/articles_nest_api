@@ -9,6 +9,8 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  Options,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
@@ -16,6 +18,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('Artigos')
 @ApiBearerAuth('JWT-auth')
@@ -34,8 +37,11 @@ export class ArticlesController {
     return this.articlesService.create(createArticleDto, req.user.userId);
   }
 
+  @Public()
+  @Options()
   @HttpCode(HttpStatus.OK)
-  @Get('OPTIONS')
+  @Header('Allow', 'GET,POST,PATCH,DELETE,OPTIONS')
+  @Header('Content-Type', 'application/json')
   @ApiOperation({ summary: 'Obter informações sobre endpoints de artigos' })
   @ApiResponse({ status: 200, description: 'Informações dos endpoints' })
   options() {

@@ -18,7 +18,9 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  app.enableCors({
+    preflightContinue: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('API de Gerenciamento de Artigos')

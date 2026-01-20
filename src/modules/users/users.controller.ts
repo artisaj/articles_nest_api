@@ -8,6 +8,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Options,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -34,8 +36,11 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Public()
+  @Options()
   @HttpCode(HttpStatus.OK)
-  @Get('OPTIONS')
+  @Header('Allow', 'GET,POST,PATCH,DELETE,OPTIONS')
+  @Header('Content-Type', 'application/json')
   @ApiOperation({ summary: 'Obter informações sobre endpoints disponíveis' })
   @ApiResponse({ status: 200, description: 'Informações dos endpoints' })
   options() {
