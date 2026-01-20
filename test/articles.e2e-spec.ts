@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
@@ -16,6 +20,10 @@ describe('Articles CRUD (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -35,14 +43,14 @@ describe('Articles CRUD (e2e)', () => {
     adminToken = adminResponse.body.access_token;
 
     // Create and login as editor
-    await request(app.getHttpServer()).post('/users').send({
+    await request(app.getHttpServer()).post('/v1/users').send({
       name: 'Editor E2E',
       email: 'editor.e2e@example.com',
       password: 'Editor@123',
     });
     await request(app.getHttpServer())
       .post(
-        '/users/' +
+        '/v1/users/' +
           (await getUserId('editor.e2e@example.com')) +
           '/permissions/EDITOR',
       )
@@ -56,14 +64,14 @@ describe('Articles CRUD (e2e)', () => {
     editorToken = editorResponse.body.access_token;
 
     // Create and login as reader
-    await request(app.getHttpServer()).post('/users').send({
+    await request(app.getHttpServer()).post('/v1/users').send({
       name: 'Reader E2E',
       email: 'reader.e2e@example.com',
       password: 'Reader@123',
     });
     await request(app.getHttpServer())
       .post(
-        '/users/' +
+        '/v1/users/' +
           (await getUserId('reader.e2e@example.com')) +
           '/permissions/READER',
       )
@@ -79,9 +87,9 @@ describe('Articles CRUD (e2e)', () => {
 
   async function getUserId(email: string): Promise<string> {
     const response = await request(app.getHttpServer())
-      .get('/users')
+      .get('/v1/users')
       .set('Authorization', `Bearer ${adminToken}`);
-    const user = response.body.find((u: any) => u.email === email);
+    const user = response.body.data.find((u: any) => u.email === email);
     return user.id;
   }
 
@@ -92,7 +100,7 @@ describe('Articles CRUD (e2e)', () => {
   describe('/articles (POST)', () => {
     it('should create article with ADMIN role', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'E2E Test Article',
@@ -113,7 +121,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should create article with EDITOR role', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${editorToken}`)
         .send({
           title: 'Editor Article',
@@ -124,7 +132,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should reject article creation with READER role', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${readerToken}`)
         .send({
           title: 'Reader Article',
@@ -135,7 +143,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should reject unauthenticated article creation', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .send({
           title: 'Unauthenticated Article',
           content: 'Should fail',
@@ -145,7 +153,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should reject article with missing title', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           content: 'Missing title',
@@ -155,7 +163,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should reject article with empty content', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'Empty content article',
@@ -168,38 +176,72 @@ describe('Articles CRUD (e2e)', () => {
   describe('/articles (GET)', () => {
     it('should list articles with ADMIN role', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200)
         .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBeGreaterThan(0);
+          expect(res.body).toHaveProperty('data');
+          expect(res.body).toHaveProperty('meta');
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body.data.length).toBeGreaterThan(0);
+          expect(res.body.meta).toHaveProperty('page', 1);
+          expect(res.body.meta).toHaveProperty('limit', 10);
         });
     });
 
     it('should list articles with EDITOR role', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${editorToken}`)
-        .expect(200);
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body).toHaveProperty('meta');
+        });
     });
 
     it('should list articles with READER role', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${readerToken}`)
-        .expect(200);
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body).toHaveProperty('meta');
+        });
     });
 
     it('should reject unauthenticated listing', () => {
-      return request(app.getHttpServer()).get('/articles').expect(401);
+      return request(app.getHttpServer()).get('/v1/articles').expect(401);
+    });
+
+    it('should support pagination parameters', () => {
+      return request(app.getHttpServer())
+        .get('/v1/articles?page=1&limit=5')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.meta.page).toBe(1);
+          expect(res.body.meta.limit).toBe(5);
+        });
+    });
+
+    it('should support title filter', () => {
+      return request(app.getHttpServer())
+        .get('/v1/articles?title=E2E')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(Array.isArray(res.body.data)).toBe(true);
+        });
     });
   });
 
   describe('/articles/:id (GET)', () => {
     it('should get specific article with READER role', () => {
       return request(app.getHttpServer())
-        .get(`/articles/${createdArticleId}`)
+        .get(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${readerToken}`)
         .expect(200)
         .expect((res) => {
@@ -210,7 +252,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should return 404 for non-existent article', () => {
       return request(app.getHttpServer())
-        .get('/articles/00000000-0000-0000-0000-000000000000')
+        .get('/v1/articles/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
@@ -219,7 +261,7 @@ describe('Articles CRUD (e2e)', () => {
   describe('/articles/:id (PATCH)', () => {
     it('should update article with ADMIN role', () => {
       return request(app.getHttpServer())
-        .patch(`/articles/${createdArticleId}`)
+        .patch(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'Updated Title E2E',
@@ -232,7 +274,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should update article with EDITOR role', () => {
       return request(app.getHttpServer())
-        .patch(`/articles/${createdArticleId}`)
+        .patch(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${editorToken}`)
         .send({
           content: 'Updated content by editor',
@@ -242,7 +284,7 @@ describe('Articles CRUD (e2e)', () => {
 
     it('should reject update with READER role', () => {
       return request(app.getHttpServer())
-        .patch(`/articles/${createdArticleId}`)
+        .patch(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${readerToken}`)
         .send({
           title: 'Should fail',
@@ -254,21 +296,21 @@ describe('Articles CRUD (e2e)', () => {
   describe('/articles/:id (DELETE)', () => {
     it('should reject delete with READER role', () => {
       return request(app.getHttpServer())
-        .delete(`/articles/${createdArticleId}`)
+        .delete(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${readerToken}`)
         .expect(403);
     });
 
     it('should delete article with EDITOR role', () => {
       return request(app.getHttpServer())
-        .delete(`/articles/${createdArticleId}`)
+        .delete(`/v1/articles/${createdArticleId}`)
         .set('Authorization', `Bearer ${editorToken}`)
         .expect(204);
     });
 
     it('should reject unauthenticated delete', () => {
       return request(app.getHttpServer())
-        .delete('/articles/some-id')
+        .delete('/v1/articles/some-id')
         .expect(401);
     });
   });

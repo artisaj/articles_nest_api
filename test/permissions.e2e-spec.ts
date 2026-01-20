@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
@@ -15,6 +19,10 @@ describe('Permissions & RBAC (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -35,7 +43,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     // Create editor user
     const editorUserResponse = await request(app.getHttpServer())
-      .post('/users')
+      .post('/v1/users')
       .send({
         name: 'Editor Permission Test',
         email: 'editor.perm@example.com',
@@ -59,7 +67,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     // Create reader user
     const readerUserResponse = await request(app.getHttpServer())
-      .post('/users')
+      .post('/v1/users')
       .send({
         name: 'Reader Permission Test',
         email: 'reader.perm@example.com',
@@ -89,7 +97,7 @@ describe('Permissions & RBAC (e2e)', () => {
   describe('ADMIN role permissions', () => {
     it('should allow ADMIN to create users', () => {
       return request(app.getHttpServer())
-        .post('/users')
+        .post('/v1/users')
         .send({
           name: 'User by Admin',
           email: `admin.created.${Date.now()}@example.com`,
@@ -100,7 +108,7 @@ describe('Permissions & RBAC (e2e)', () => {
 
     it('should allow ADMIN to create articles', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'Admin Article',
@@ -111,14 +119,14 @@ describe('Permissions & RBAC (e2e)', () => {
 
     it('should allow ADMIN to read articles', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
     });
 
     it('should allow ADMIN to read users', () => {
       return request(app.getHttpServer())
-        .get('/users')
+        .get('/v1/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
     });
@@ -127,7 +135,7 @@ describe('Permissions & RBAC (e2e)', () => {
   describe('EDITOR role permissions', () => {
     it('should allow EDITOR to create articles', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${editorToken}`)
         .send({
           title: 'Editor Article',
@@ -138,14 +146,14 @@ describe('Permissions & RBAC (e2e)', () => {
 
     it('should allow EDITOR to read articles', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${editorToken}`)
         .expect(200);
     });
 
     it('should allow EDITOR to read users', () => {
       return request(app.getHttpServer())
-        .get('/users')
+        .get('/v1/users')
         .set('Authorization', `Bearer ${editorToken}`)
         .expect(200);
     });
@@ -154,7 +162,7 @@ describe('Permissions & RBAC (e2e)', () => {
   describe('READER role permissions', () => {
     it('should reject READER creating articles', () => {
       return request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${readerToken}`)
         .send({
           title: 'Reader Article',
@@ -165,14 +173,14 @@ describe('Permissions & RBAC (e2e)', () => {
 
     it('should allow READER to read articles', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', `Bearer ${readerToken}`)
         .expect(200);
     });
 
     it('should allow READER to read users', () => {
       return request(app.getHttpServer())
-        .get('/users')
+        .get('/v1/users')
         .set('Authorization', `Bearer ${readerToken}`)
         .expect(200);
     });
@@ -180,7 +188,7 @@ describe('Permissions & RBAC (e2e)', () => {
     it('should reject READER updating articles', async () => {
       // First create an article as admin
       const createResponse = await request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'Article to test update',
@@ -202,7 +210,7 @@ describe('Permissions & RBAC (e2e)', () => {
     it('should reject READER deleting articles', async () => {
       // First create an article as admin
       const createResponse = await request(app.getHttpServer())
-        .post('/articles')
+        .post('/v1/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'Article to test delete',
@@ -233,14 +241,14 @@ describe('Permissions & RBAC (e2e)', () => {
 
     it('should reject invalid JWT token', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set('Authorization', 'Bearer invalid-token')
         .expect(401);
     });
 
     it('should reject expired or malformed token', () => {
       return request(app.getHttpServer())
-        .get('/articles')
+        .get('/v1/articles')
         .set(
           'Authorization',
           'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature',

@@ -12,6 +12,9 @@ Sistema completo de gerenciamento de artigos com autenticação JWT e controle d
 - **Docker & Docker Compose** - Containerização
 - **Swagger/OpenAPI** - Documentação da API
 - **Jest** - Framework de testes
+- **Pino** - Logger de alta performance
+- **Joi** - Validação de variáveis de ambiente
+- **Husky** - Git hooks para qualidade de código
 
 ## 📋 Pré-requisitos
 
@@ -21,17 +24,20 @@ Sistema completo de gerenciamento de artigos com autenticação JWT e controle d
 ## 🔧 Como Executar
 
 1. Clone o repositório:
+
 ```bash
 git clone <url-do-repositorio>
 cd artigos
 ```
 
 2. Execute o projeto com Docker:
+
 ```bash
 docker compose up --build
 ```
 
 3. A aplicação estará disponível em:
+
 - **API**: http://localhost:3000
 - **Documentação Swagger**: http://localhost:3000/api
 
@@ -40,6 +46,7 @@ As migrations e seeds serão executados automaticamente na inicialização.
 ## 📚 Documentação da API
 
 A documentação completa da API está disponível via Swagger em:
+
 ```
 http://localhost:3000/api
 ```
@@ -49,6 +56,7 @@ http://localhost:3000/api
 Todos os endpoints (exceto `/auth/login`) requerem autenticação via JWT.
 
 **Login:**
+
 ```http
 POST /auth/login
 Content-Type: application/json
@@ -60,6 +68,7 @@ Content-Type: application/json
 ```
 
 Resposta:
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -73,6 +82,7 @@ Resposta:
 ```
 
 **Usar o token:**
+
 ```http
 Authorization: Bearer {access_token}
 ```
@@ -80,41 +90,106 @@ Authorization: Bearer {access_token}
 ### Endpoints Principais
 
 #### Autenticação
+
 - `POST /auth/login` - Login (público)
 
 #### Usuários
-- `POST /users` - Criar usuário (ADMIN)
-- `GET /users` - Listar usuários (requer autenticação)
-- `GET /users/:id` - Buscar usuário (requer autenticação)
-- `PUT /users/:id` - Atualizar usuário (ADMIN)
-- `DELETE /users/:id` - Deletar usuário (ADMIN)
-- `POST /users/:userId/permissions/:permissionId` - Atribuir permissão (ADMIN)
+
+- `POST /v1/users` - Criar usuário (ADMIN)
+- `GET /v1/users` - Listar usuários com paginação e filtros (requer autenticação)
+- `GET /v1/users/:id` - Buscar usuário (requer autenticação)
+- `PATCH /v1/users/:id` - Atualizar usuário (ADMIN)
+- `DELETE /v1/users/:id` - Deletar usuário (ADMIN)
+- `POST /v1/users/:userId/permissions/:permissionId` - Atribuir permissão (ADMIN)
 
 #### Artigos
-- `POST /articles` - Criar artigo (ADMIN, EDITOR)
-- `GET /articles` - Listar artigos (ADMIN, EDITOR, READER)
-- `GET /articles/:id` - Buscar artigo (ADMIN, EDITOR, READER)
-- `PUT /articles/:id` - Atualizar artigo (ADMIN, EDITOR)
-- `DELETE /articles/:id` - Deletar artigo (ADMIN, EDITOR)
+
+- `POST /v1/articles` - Criar artigo (ADMIN, EDITOR)
+- `GET /v1/articles` - Listar artigos com paginação e filtros (ADMIN, EDITOR, READER)
+- `GET /v1/articles/:id` - Buscar artigo (ADMIN, EDITOR, READER)
+- `PATCH /v1/articles/:id` - Atualizar artigo (ADMIN, EDITOR)
+- `DELETE /v1/articles/:id` - Deletar artigo (ADMIN, EDITOR)
 
 #### Permissões
-- `GET /permissions` - Listar permissões (requer autenticação)
+
+- `GET /v1/permissions` - Listar permissões (requer autenticação)
+
+### Paginação e Filtros
+
+Todos os endpoints de listagem (`GET /v1/users` e `GET /v1/articles`) suportam paginação e filtros via query parameters:
+
+**Parâmetros de Paginação:**
+
+- `page` - Número da página (padrão: 1)
+- `limit` - Itens por página (padrão: 10, máximo: 100)
+- `sortBy` - Campo para ordenação (padrão: `createdAt`)
+- `sortOrder` - Direção da ordenação: `asc` ou `desc` (padrão: `desc`)
+
+**Filtros Específicos:**
+
+Para Usuários:
+
+- `name` - Filtro por nome (busca case-insensitive)
+- `email` - Filtro por email (busca case-insensitive)
+
+Para Artigos:
+
+- `title` - Filtro por título (busca case-insensitive)
+- `authorId` - Filtro por ID do autor (UUID)
+
+**Formato de Resposta Paginada:**
+
+```json
+{
+  "data": [...], // Array com os resultados
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 50,
+    "totalPages": 5,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  }
+}
+```
+
+**Exemplos:**
+
+```bash
+# Paginação simples
+GET /v1/users?page=2&limit=20
+
+# Com filtros
+GET /v1/users?name=maria&email=gmail.com&page=1&limit=10
+
+# Com ordenação
+GET /v1/articles?sortBy=title&sortOrder=asc&page=1
+
+# Filtro por autor
+GET /v1/articles?authorId=123e4567-e89b-12d3-a456-426614174000
+
+# Combinando tudo
+GET /v1/articles?title=NestJS&sortBy=createdAt&sortOrder=desc&page=1&limit=5
+```
 
 ## 👥 Sistema de Permissões (RBAC)
 
 O sistema possui três níveis de acesso:
 
 ### ADMIN
+
 - Acesso total ao sistema
 - CRUD completo em usuários
 - CRUD completo em artigos
 - Gerenciar permissões
 
 ### EDITOR
+
 - CRUD completo em artigos
 - Visualizar usuários (sem modificar)
 
 ### READER
+
 - Apenas leitura de artigos
 - Visualizar usuários (sem modificar)
 
@@ -176,6 +251,7 @@ npm run test:e2e
 ```
 
 Cobertura de testes:
+
 - ✅ Autenticação (4 testes)
 - ✅ CRUD de Usuários (13 testes)
 - ✅ CRUD de Artigos (18 testes)
@@ -250,6 +326,7 @@ O sistema retorna os seguintes status HTTP:
 - `500 Internal Server Error` - Erro no servidor
 
 Todas as respostas de erro seguem o formato:
+
 ```json
 {
   "statusCode": 400,
@@ -271,6 +348,7 @@ Todas as respostas de erro seguem o formato:
 ## 📝 Exemplos de Uso
 
 ### 1. Fazer Login
+
 ```bash
 curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
@@ -278,8 +356,9 @@ curl -X POST http://localhost:3000/auth/login \
 ```
 
 ### 2. Criar Usuário (como ADMIN)
+
 ```bash
-curl -X POST http://localhost:3000/users \
+curl -X POST http://localhost:3000/v1/users \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{
@@ -290,14 +369,16 @@ curl -X POST http://localhost:3000/users \
 ```
 
 ### 3. Atribuir Permissão EDITOR
+
 ```bash
-curl -X POST http://localhost:3000/users/{userId}/permissions/{permissionId} \
+curl -X POST http://localhost:3000/v1/users/{userId}/permissions/{permissionId} \
   -H "Authorization: Bearer {token}"
 ```
 
 ### 4. Criar Artigo (como EDITOR ou ADMIN)
+
 ```bash
-curl -X POST http://localhost:3000/articles \
+curl -X POST http://localhost:3000/v1/articles \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{
@@ -306,9 +387,31 @@ curl -X POST http://localhost:3000/articles \
   }'
 ```
 
-### 5. Listar Artigos (qualquer usuário autenticado)
+### 5. Listar Artigos com Paginação
+
 ```bash
-curl http://localhost:3000/articles \
+# Listar primeira página com 10 itens
+curl http://localhost:3000/v1/articles?page=1&limit=10 \
+  -H "Authorization: Bearer {token}"
+
+# Filtrar por título
+curl http://localhost:3000/v1/articles?title=NestJS&page=1 \
+  -H "Authorization: Bearer {token}"
+
+# Ordenar por título ascendente
+curl http://localhost:3000/v1/articles?sortBy=title&sortOrder=asc \
+  -H "Authorization: Bearer {token}"
+```
+
+### 6. Listar Usuários com Filtros
+
+```bash
+# Buscar usuários por nome
+curl http://localhost:3000/v1/users?name=maria&page=1&limit=20 \
+  -H "Authorization: Bearer {token}"
+
+# Buscar por email
+curl http://localhost:3000/v1/users?email=gmail.com \
   -H "Authorization: Bearer {token}"
 ```
 
@@ -333,6 +436,7 @@ Este projeto é open source e está disponível sob a licença MIT.
 Para desenvolvimento local sem Docker:
 
 1. Instale as dependências:
+
 ```bash
 cd api
 npm install
@@ -341,12 +445,14 @@ npm install
 2. Configure o `.env` apontando para um PostgreSQL local
 
 3. Execute as migrations:
+
 ```bash
 npx prisma migrate deploy
 npx prisma db seed
 ```
 
 4. Inicie em modo desenvolvimento:
+
 ```bash
 npm run start:dev
 ```
@@ -354,6 +460,7 @@ npm run start:dev
 ## 🆘 Troubleshooting
 
 ### Porta 3000 já em uso
+
 ```bash
 # Mudar a porta no docker-compose.yml
 ports:
@@ -361,6 +468,7 @@ ports:
 ```
 
 ### Banco de dados não conecta
+
 ```bash
 # Verificar se o PostgreSQL está rodando
 docker compose ps
@@ -370,6 +478,7 @@ docker compose logs postgres
 ```
 
 ### Resetar banco de dados
+
 ```bash
 # Parar e remover volumes
 docker compose down -v
