@@ -29,6 +29,40 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Get('OPTIONS')
+  options() {
+    return {
+      methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+      endpoints: {
+        'GET /users': {
+          description: 'List all users',
+          authentication: 'required',
+        },
+        'GET /users/:id': {
+          description: 'Get a specific user',
+          authentication: 'required',
+        },
+        'POST /users': {
+          description: 'Create a new user',
+          authentication: 'public',
+        },
+        'PATCH /users/:id': {
+          description: 'Update a user',
+          authentication: 'required',
+        },
+        'DELETE /users/:id': {
+          description: 'Delete a user',
+          authentication: 'required',
+        },
+        'POST /users/:userId/permissions/:permissionName': {
+          description: 'Assign a permission to a user',
+          authentication: 'required',
+        },
+      },
+    };
+  }
+
   @Get()
   findAll() {
     return this.usersService.findAll();
@@ -60,6 +94,9 @@ export class UsersController {
     if (!permission) {
       throw new Error('Permission not found');
     }
-    return this.permissionsService.assignPermissionToUser(userId, permission.id);
+    return this.permissionsService.assignPermissionToUser(
+      userId,
+      permission.id,
+    );
   }
 }
