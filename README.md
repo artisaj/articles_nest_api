@@ -26,7 +26,7 @@ Sistema completo de gerenciamento de artigos com autenticação JWT e controle d
 1. Clone o repositório:
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/artisaj/articles_nest_api.git
 cd artigos
 ```
 
