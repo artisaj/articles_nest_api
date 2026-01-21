@@ -5,8 +5,6 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { environment } from './config/environment';
 import helmet from 'helmet';
-import * as fs from 'fs';
-import * as path from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -98,22 +96,12 @@ POST /articles       → Criar artigo (requer auth)
 
   const document = SwaggerModule.createDocument(app, config);
 
-  // Carregar CSS customizado
-  const customCss = fs.readFileSync(
-    path.join(__dirname, 'config', 'swagger.css'),
-    'utf8',
-  );
-
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
       docExpansion: 'none',
       filter: true,
       showRequestDuration: true,
-      syntaxHighlight: {
-        activate: true,
-        theme: 'monokai',
-      },
       tryItOutEnabled: true,
       displayOperationId: false,
       displayRequestDuration: true,
@@ -123,8 +111,6 @@ POST /articles       → Criar artigo (requer auth)
       operationsSorter: 'alpha',
     },
     customSiteTitle: 'Articles API - Documentation',
-    customCss,
-    customCssUrl: '',
   });
 
   const port = environment.port;
