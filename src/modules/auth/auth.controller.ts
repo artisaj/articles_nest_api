@@ -22,18 +22,6 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Login realizado com sucesso',
-    schema: {
-      example: {
-        access_token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hcmlhIFNpbHZhIiwiZW1haWwiOiJtYXJpYS5zaWx2YUBleGFtcGxlLmNvbSIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-        user: {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'Maria Silva',
-          email: 'maria.silva@example.com',
-          createdAt: '2024-01-20T10:30:00.000Z',
-        },
-      },
-    },
   })
   @ApiResponse({
     status: 401,

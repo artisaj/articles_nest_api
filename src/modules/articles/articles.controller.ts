@@ -44,17 +44,6 @@ export class ArticlesController {
   @ApiResponse({
     status: 201,
     description: 'Artigo criado com sucesso',
-    schema: {
-      example: {
-        id: '789e4567-e89b-12d3-a456-426614174002',
-        title: 'Como implementar autenticação JWT em NestJS',
-        content:
-          '# Introdução ao NestJS\n\nNestJS é um framework progressivo para construção de aplicações server-side...',
-        authorId: '123e4567-e89b-12d3-a456-426614174000',
-        createdAt: '2024-01-20T11:00:00.000Z',
-        updatedAt: '2024-01-20T11:00:00.000Z',
-      },
-    },
   })
   @ApiResponse({
     status: 401,
@@ -140,47 +129,6 @@ export class ArticlesController {
   @ApiResponse({
     status: 200,
     description: 'Lista paginada de artigos',
-    schema: {
-      example: {
-        data: [
-          {
-            id: '789e4567-e89b-12d3-a456-426614174002',
-            title: 'Como implementar autenticação JWT em NestJS',
-            content:
-              '# Introdução ao NestJS\n\nNestJS é um framework progressivo...',
-            creatorId: '123e4567-e89b-12d3-a456-426614174000',
-            creator: {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              name: 'Maria Silva',
-              email: 'maria.silva@example.com',
-            },
-            createdAt: '2024-01-20T11:00:00.000Z',
-            updatedAt: '2024-01-20T11:00:00.000Z',
-          },
-          {
-            id: '889e4567-e89b-12d3-a456-426614174003',
-            title: 'Introdução ao Prisma ORM',
-            content: 'Prisma é um ORM moderno para Node.js e TypeScript...',
-            creatorId: '223e4567-e89b-12d3-a456-426614174001',
-            creator: {
-              id: '223e4567-e89b-12d3-a456-426614174001',
-              name: 'João Santos',
-              email: 'joao.santos@example.com',
-            },
-            createdAt: '2024-01-19T16:30:00.000Z',
-            updatedAt: '2024-01-19T16:30:00.000Z',
-          },
-        ],
-        meta: {
-          page: 1,
-          limit: 10,
-          total: 25,
-          totalPages: 3,
-          hasNextPage: true,
-          hasPreviousPage: false,
-        },
-      },
-    },
   })
   @ApiResponse({
     status: 401,
@@ -216,17 +164,6 @@ export class ArticlesController {
   @ApiResponse({
     status: 200,
     description: 'Artigo encontrado',
-    schema: {
-      example: {
-        id: '789e4567-e89b-12d3-a456-426614174002',
-        title: 'Como implementar autenticação JWT em NestJS',
-        content:
-          '# Introdução ao NestJS\n\nNestJS é um framework progressivo para construção de aplicações server-side eficientes e escaláveis...',
-        authorId: '123e4567-e89b-12d3-a456-426614174000',
-        createdAt: '2024-01-20T11:00:00.000Z',
-        updatedAt: '2024-01-20T11:00:00.000Z',
-      },
-    },
   })
   @ApiResponse({
     status: 404,

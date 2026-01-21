@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -45,15 +46,6 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'Usuário criado com sucesso',
-    schema: {
-      example: {
-        id: '123e4567-e89b-12d3-a456-426614174000',
-        name: 'Maria Silva',
-        email: 'maria.silva@example.com',
-        createdAt: '2024-01-20T10:30:00.000Z',
-        updatedAt: '2024-01-20T10:30:00.000Z',
-      },
-    },
   })
   @ApiResponse({
     status: 400,
@@ -133,34 +125,6 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Lista paginada de usuários',
-    schema: {
-      example: {
-        data: [
-          {
-            id: '123e4567-e89b-12d3-a456-426614174000',
-            name: 'Maria Silva',
-            email: 'maria.silva@example.com',
-            createdAt: '2024-01-20T10:30:00.000Z',
-            updatedAt: '2024-01-20T10:30:00.000Z',
-          },
-          {
-            id: '223e4567-e89b-12d3-a456-426614174001',
-            name: 'João Santos',
-            email: 'joao.santos@example.com',
-            createdAt: '2024-01-19T15:20:00.000Z',
-            updatedAt: '2024-01-19T15:20:00.000Z',
-          },
-        ],
-        meta: {
-          page: 1,
-          limit: 10,
-          total: 50,
-          totalPages: 5,
-          hasNextPage: true,
-          hasPreviousPage: false,
-        },
-      },
-    },
   })
   @ApiResponse({
     status: 401,
@@ -186,15 +150,6 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Usuário encontrado',
-    schema: {
-      example: {
-        id: '123e4567-e89b-12d3-a456-426614174000',
-        name: 'Maria Silva',
-        email: 'maria.silva@example.com',
-        createdAt: '2024-01-20T10:30:00.000Z',
-        updatedAt: '2024-01-20T10:30:00.000Z',
-      },
-    },
   })
   @ApiResponse({
     status: 404,
@@ -242,7 +197,15 @@ export class UsersController {
 
   @Post(':userId/permissions/:permissionName')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Atribuir permissão a usuário' })
+  @ApiOperation({
+    summary: 'Atribuir permissão a usuário',
+  })
+  @ApiParam({
+    name: 'permissionName',
+    description: 'Nome da permissão a ser atribuída',
+    enum: ['ADMIN', 'EDITOR', 'READER'],
+    example: 'EDITOR',
+  })
   @ApiResponse({ status: 200, description: 'Permissão atribuída' })
   @ApiResponse({
     status: 404,

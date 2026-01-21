@@ -4,7 +4,6 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 export class UpdateArticleDto {
   @ApiPropertyOptional({
     description: 'Título do artigo',
-    example: 'Introdução ao NestJS - Atualizado',
     maxLength: 255,
   })
   @IsOptional()
@@ -14,7 +13,6 @@ export class UpdateArticleDto {
 
   @ApiPropertyOptional({
     description: 'Conteúdo do artigo',
-    example: 'Conteúdo atualizado do artigo...',
   })
   @IsOptional()
   @IsString()

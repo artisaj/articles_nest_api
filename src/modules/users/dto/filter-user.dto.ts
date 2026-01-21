@@ -5,7 +5,6 @@ import { PaginationDto } from '../../../common/dto/pagination.dto';
 export class FilterUserDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filtrar por nome (busca parcial, case-insensitive)',
-    example: 'Maria',
   })
   @IsOptional()
   @IsString()
@@ -13,7 +12,6 @@ export class FilterUserDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filtrar por email (busca parcial, case-insensitive)',
-    example: 'maria@example.com',
   })
   @IsOptional()
   @IsString()
