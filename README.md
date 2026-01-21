@@ -27,7 +27,7 @@ Sistema completo de gerenciamento de artigos com autenticação JWT e controle d
 
 ```bash
 git clone https://github.com/artisaj/articles_nest_api.git
-cd artigos
+cd articles_nest_api
 ```
 
 2. Execute o projeto com Docker:
